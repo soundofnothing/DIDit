@@ -1,7 +1,7 @@
 import unittest
-from my_module import normalize_text, calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies
+from signature import normalize_text, calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies
 
-class TestMyModule(unittest.TestCase):
+class TestSignature(unittest.TestCase):
 
     def test_normalize_text(self):
         text = "Hello, world!"
