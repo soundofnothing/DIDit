@@ -1,27 +1,25 @@
-from signature import normalize_text, calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies
+from signature import normalize_text, calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies, chunk_text
 
-def main():
-    original_text = input("Enter the original text: ")
-    normalized_text = normalize_text(original_text)
+# Normalize text
+text = "Hello, World!"
+normalized_text = normalize_text(text)
+print(normalized_text)
 
-    character_frequencies = calculate_character_frequencies(normalized_text)
-    print("Normalized Text Character Frequencies:")
-    for char, frequency in character_frequencies.items():
-        print(char, ":", frequency)
+# Calculate character frequencies
+character_frequencies = calculate_character_frequencies(text)
+print(character_frequencies)
 
-    word_frequencies = calculate_word_frequencies(normalized_text)
-    print("Word Frequencies:")
-    for word, frequency in word_frequencies.items():
-        print(word, ":", frequency)
+# Calculate word frequencies
+word_frequencies = calculate_word_frequencies(text)
+print(word_frequencies)
 
-    stopword_frequencies, nonletter_frequencies = calculate_stopword_and_nonletter_frequencies(original_text)
-    print("Stopword Frequencies:")
-    for stopword, frequency in stopword_frequencies.items():
-        print(stopword, ":", frequency)
+# Calculate stopword and nonletter frequencies
+stopword_frequencies, nonletter_frequencies = calculate_stopword_and_nonletter_frequencies(text)
+print(stopword_frequencies)
+print(nonletter_frequencies)
 
-    print("Non-letter Character Frequencies:")
-    for char, frequency in nonletter_frequencies.items():
-        print(char, ":", frequency)
-
-if __name__ == '__main__':
-    main()
+# Chunk text
+data = ["This is the first text.", "This is the second text."]
+num_tokens = 3
+chunks = chunk_text(data, num_tokens)
+print(chunks)
