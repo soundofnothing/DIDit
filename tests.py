@@ -1,49 +1,48 @@
-from signature import normalize_text, calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies, chunk_text
+import plotly.graph_objects as go
+import plotly.express as px
+from typing import List, Dict
 from datetime import datetime
+from signature import calculate_character_frequencies, calculate_word_frequencies, calculate_stopword_and_nonletter_frequencies
 
 
-# Test normalize_text function
-def test_normalize_text():
-    text = "Hello, World!"
-    expected_output = "hello world"
-    assert normalize_text(text) == expected_output
+def visualize_character_frequencies(text: str, timestamp: datetime = None):
+    character_frequencies = calculate_character_frequencies(text)
+
+    characters = list(character_frequencies.keys())
+    frequencies = list(character_frequencies.values())
+
+    fig = go.Figure(data=[go.Bar(x=characters, y=frequencies)])
+    fig.update_layout(title='Character Frequencies', xaxis_title='Character', yaxis_title='Frequency')
+    if timestamp:
+        fig.update_layout(title=f'Character Frequencies ({timestamp})')
+    fig.show()
 
 
-# Test calculate_character_frequencies function
-def test_calculate_character_frequencies():
-    text = "Hello, World!"
-    expected_output = {'h': 1, 'e': 1, 'l': 3, 'o': 2, 'w': 1, 'r': 1, 'd': 1}
-    assert calculate_character_frequencies(text) == expected_output
+def visualize_word_frequencies(text: str, timestamp: datetime = None):
+    word_frequencies = calculate_word_frequencies(text)
+
+    words = list(word_frequencies.keys())
+    frequencies = list(word_frequencies.values())
+
+    fig = px.bar(x=words, y=frequencies, labels={'x': 'Words', 'y': 'Frequency'})
+    if timestamp:
+        fig.update_layout(title=f'Word Frequencies ({timestamp})')
+    fig.show()
 
 
-# Test calculate_word_frequencies function
-def test_calculate_word_frequencies():
-    text = "Hello, World!"
-    expected_output = {'hello': 1, 'world': 1}
-    assert calculate_word_frequencies(text) == expected_output
-
-
-# Test calculate_stopword_and_nonletter_frequencies function
-def test_calculate_stopword_and_nonletter_frequencies():
-    text = "Hello, World! This is a text with stopwords."
-    expected_stopword_frequencies = {'is': 1, 'a': 1, 'this': 1, 'with': 1}
-    expected_nonletter_frequencies = {',': 1, '!': 1, '.': 1}
+def visualize_stopword_and_nonletter_frequencies(text: str, timestamp: datetime = None):
     stopword_frequencies, nonletter_frequencies = calculate_stopword_and_nonletter_frequencies(text)
-    assert stopword_frequencies == expected_stopword_frequencies
-    assert nonletter_frequencies == expected_nonletter_frequencies
 
+    stopwords = list(stopword_frequencies.keys())
+    stopwords_frequencies = list(stopword_frequencies.values())
+    nonletter = list(nonletter_frequencies.keys())
+    nonletter_frequencies = list(nonletter_frequencies.values())
 
-# Test chunk_text function
-def test_chunk_text():
-    data = ["This is the first text.", "This is the second text."]
-    num_tokens = 3
-    expected_output = ['This is the', 'first text.', 'This is the', 'second text.']
-    assert chunk_text(data, num_tokens) == expected_output
-
-
-# Run the test functions
-test_normalize_text()
-test_calculate_character_frequencies()
-test_calculate_word_frequencies()
-test_calculate_stopword_and_nonletter_frequencies()
-test_chunk_text()
+    fig = go.Figure(data=[
+        go.Bar(name='Stopwords', x=stopwords, y=stopwords_frequencies),
+        go.Bar(name='Non-letter Characters', x=nonletter, y=nonletter_frequencies)
+    ])
+    fig.update_layout(title='Stopword and Non-letter Character Frequencies', xaxis_title='Words/Characters', yaxis_title='Frequency')
+    if timestamp:
+        fig.update_layout(title=f'Stopword and Non-letter Character Frequencies ({timestamp})')
+    fig.show()
