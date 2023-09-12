@@ -1,34 +1,44 @@
+from typing import List, Tuple
 import requests
-from typing import List
+import feedparser
 
 
-def get_timeline(screen_name: str, url: str) -> List[str]:
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        timeline_data = response.json()
-        timeline_posts = [post['text'] for post in timeline_data]
-        return timeline_posts
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
-        return []
+def get_timeline_data(label: str, rss_feed_url: str) -> List[Tuple[str, str]]:
+    # Fetch the RSS feed from the provided URL
+    feed = feedparser.parse(rss_feed_url)
+
+    # Extract the timeline entries and their corresponding dates
+    timeline_entries = []
+    for entry in feed.entries:
+        date = entry.published
+        text = entry.title
+        timeline_entries.append((date, text))
+
+    return timeline_entries
 
 
-def analyze_timeline(screen_name: str, url: str):
-    timeline_posts = get_timeline(screen_name, url)
-    if not timeline_posts:
-        print("Unable to retrieve the timeline data.")
-        return
-    
-    # Analyze the timeline posts
-    # ...
+def preprocess_timeline_data(timeline_data: List[Tuple[str, str]]) -> List[str]:
+    # Preprocess the timeline data by applying normalization
+    # and any other necessary preprocessing steps
+    preprocessed_data = []
+    for date, entry_text in timeline_data:
+        preprocessed_text = normalize_text(entry_text)
+        preprocessed_data.append(preprocessed_text)
 
-    # Example: Print the timeline posts
-    for post in timeline_posts:
-        print(post)
+    return preprocessed_data
 
 
-# Example usage
-screen_name = "example_user"
-url = "https://api.example.com/timeline"
-analyze_timeline(screen_name, url)
+def generate_timeline_timeseries(label: str, rss_feed_url: str) -> List[str]:
+    # Fetch and preprocess the timeline data
+    timeline_data = get_timeline_data(label, rss_feed_url)
+    preprocessed_data = preprocess_timeline_data(timeline_data)
+
+    return preprocessed_data
+
+
+if __name__ == "__main__":
+    # Example usage
+    label = "Timeline"
+    rss_feed_url = "<rss_feed_url>"
+    timeseries = generate_timeline_timeseries(label, rss_feed_url)
+    print(timeseries)
