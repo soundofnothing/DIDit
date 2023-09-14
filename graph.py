@@ -65,8 +65,8 @@ def create_stopword_punctuation_graph(text: str) -> nx.DiGraph:
 
 def convert_graph_to_numpy(graph: nx.DiGraph) -> np.ndarray:
     node_indices = {node: index for index, node in enumerate(graph.nodes())}
-    adjacency_matrix = nx.to_numpy_matrix(graph, nodelist=graph.nodes())
-    return np.array(adjacency_matrix), node_indices
+    adjacency_matrix = nx.to_numpy_array(graph, nodelist=graph.nodes())
+    return adjacency_matrix, node_indices
 
 
 def convert_graphs_to_numpy(graphs: dict) -> dict:
@@ -80,3 +80,4 @@ def convert_numpy_to_umap(numpy_graph: tuple) -> np.ndarray:
     adjacency_matrix, _ = numpy_graph
     umap_embedding = UMAP(n_components=2, metric='precomputed').fit_transform(adjacency_matrix)
     return umap_embedding
+
