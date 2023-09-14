@@ -23,7 +23,6 @@ def calculate_word_frequencies(text: str) -> Dict[str, int]:
 
 
 def calculate_stopword_and_nonletter_frequencies(text: str) -> Dict[str, int]:
-    text = normalize_text(text)
     words = text.split()
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
     stopwords_counts = Counter(word for word in words if word in stopwords)
