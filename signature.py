@@ -10,24 +10,34 @@ def normalize_text(text: str) -> str:
 
 
 def calculate_character_frequencies(text: str) -> Dict[str, int]:
-    text = normalize_text(text)
     character_counts = Counter(text)
     return dict(character_counts)
 
 
+def calculate_normalized_character_frequencies(text: str) -> Dict[str, int]:
+    return calculate_character_frequencies(normalize_text(text))
+
+
 def calculate_word_frequencies(text: str) -> Dict[str, int]:
-    text = normalize_text(text)
     words = text.split()
     word_counts = Counter(words)
     return dict(word_counts)
 
 
-def calculate_stopword_and_nonletter_frequencies(text: str) -> Dict[str, int]:
+def calculate_normalized_word_frequencies(text: str) -> Dict[str, int]:
+    return calculate_word_frequencies(normalize_text(text))
+
+
+def calculate_stopword_frequencies(text: str) -> Dict[str, int]:
     words = text.split()
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
     stopwords_counts = Counter(word for word in words if word in stopwords)
-    nonletter_counts = Counter(char for char in text if not char.isalpha())
-    return dict(stopwords_counts), dict(nonletter_counts)
+    return dict(stopwords_counts)
+
+def calculate_nonletter_frequencies(text: str) -> Dict[str, int]:
+    words = text.split()
+    nonletter_counts = Counter(char for char in words if not char.isalpha())
+    return dict(nonletter_counts)
 
 
 def chunk_text(data: List[str], num_tokens: int) -> List[str]:
