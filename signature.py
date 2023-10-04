@@ -12,8 +12,13 @@ def normalize_text(text: str) -> str:
     text = TextBlob(text)
     # remove whitespace, covert to lowercase, attempt to correct spelling
     text = text.strip().lower().correct()
-    # convert every word in a sentence to singular form, this also should remove punctuation
-    return ' '.join(word.singularize() for word in text.words)
+    # convert every word in a sentence to singular form
+    words = [word.singularize() for word in text.words]
+    # remove stopwords
+    stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
+    filtered_words = [word for word in words if word not in stopwords]
+    # join the filtered words back into a single string
+    return ' '.join(filtered_words)
 
 
 def calculate_relative_character_frequencies(text: str) -> Dict[str, float]:
