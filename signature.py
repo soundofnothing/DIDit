@@ -49,18 +49,37 @@ def calculate_normalized_word_frequencies(text: str) -> Dict[str, int]:
     return calculate_word_frequencies(normalize_text(text))
 
 
-def calculate_stopword_frequencies(text: str) -> Dict[str, int]:
-    # do NOT convert to a blob, the underlying word frequencies would be changed and we need it for a baseline
+def calculate_stopword_frequencies(text: str) -> Dict[str, float]:
+    # Split the text into words
     words = text.split()
+    
+    # Define the stopwords and calculate the total number of stopwords
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
-    stopwords_counts = Counter(word for word in words if word in stopwords)
-    return dict(stopwords_counts)
+    total_stopwords = sum(1 for word in words if word in stopwords)
+    
+    # Calculate the stopwords counts and divide by the total number of stopwords
+    stopwords_frequencies = {
+        word: words.count(word) / total_stopwords
+        for word in stopwords
+    }
+    
+    return stopwords_frequencies
 
-def calculate_nonletter_frequencies(text: str) -> Dict[str, int]:
-    # do NOT convert to a blob, the punctuation would be removed and we need it for a baseline
+def calculate_nonletter_frequencies(text: str) -> Dict[str, float]:
+    # Split the text into words
     words = text.split()
-    nonletter_counts = Counter(char for char in words if not char.isalpha())
-    return dict(nonletter_counts)
+    
+    # Calculate the total number of non-alphanumeric characters
+    total_nonletters = sum(1 for char in words if not char.isalpha())
+    
+    # Calculate the nonletter counts and divide by the total number of non-alphanumeric characters
+    nonletter_frequencies = {
+        char: words.count(char) / total_nonletters
+        for char in words if not char.isalpha()
+    }
+    
+    return nonletter_frequencies
+
 
 
 def calculate_cosine_similarity(vector1: Dict[str, int], vector2: Dict[str, int]) -> float:
@@ -108,7 +127,7 @@ class Fingerprint(NamedTuple):
     COSINE_SIMILARITY_CHAR: float
     COSINE_SIMILARITY_WORD: float
     
-    # structural_deviation := COSINE_SIMILARITY_CHAR * character_delta + COSINE_SIMILARITY_WORD * word_delta
+    # structural_deviation := COSINE_SIMILARITY_CHAR * character_delta * NONLETTER_FREQUENCY + COSINE_SIMILARITY_WORD * word_delta * STOPWORD_FREQUENCY
     STOPWORD_FREQUENCY: Dict[str, int]
     NONLETTER_FREQUENCY: Dict[str, int]
 
@@ -148,8 +167,8 @@ class Fingerprint(NamedTuple):
                 word_delta[word] = abs(word_frequency[word] - normalized_word_frequency[word])
 
         # Calculate structural_deviation as specified
-        structural_deviation = (cosine_similarity_char * sum(character_delta.values()) +
-                                cosine_similarity_word * sum(word_delta.values()))
+        structural_deviation = (cosine_similarity_char * sum(character_delta.values()) * sum(nonletter_frequency.values()) +
+                                cosine_similarity_word * sum(word_delta.values()) * sum(stopword_frequency.values()))
 
         return cls(
             CHARACTER_FREQUENCY=character_frequency,
