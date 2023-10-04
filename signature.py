@@ -105,41 +105,35 @@ class Fingerprint(NamedTuple):
         )
 
 
-def fingerprint_to_pixel(fingerprint: Fingerprint, image_size=(100, 100)) -> np.ndarray:
+# Define the display function with word-wrapped titles
+def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(10, 5), title_length=24):
     """
-    Convert a fingerprint (Fingerprint NamedTuple) to a pixel image.
+    Display multiple fingerprints in a grid of subplots with word-wrapped titles.
 
     Args:
-        fingerprint (Fingerprint): The fingerprint object containing data to encode.
-        image_size (tuple): The size of the output image in pixels (width, height).
-
-    Returns:
-        np.ndarray: A NumPy array representing the pixel image.
+        fingerprints (list): List of Fingerprint objects to display.
+        titles (list): List of titles for each fingerprint (optional).
+        rows (int): Number of rows in the grid (default is 1).
+        cols (int): Number of columns in the grid (default is None, determined automatically).
+        figsize (tuple): Figure size (width, height) in inches (default is (10, 5)).
+        title_length (int): Maximum title length before word-wrapping (default is 24).
     """
-    image = np.zeros((*image_size, 3), dtype=np.uint8)
+    import matplotlib.pyplot as plt
+    import textwrap
+    if cols is None:
+        cols = len(fingerprints) // rows + (len(fingerprints) % rows > 0)
 
-    # Define color mappings for different aspects of the fingerprint
-    aspect_colors = {
-        'CHARACTER_FREQUENCY': (255, 0, 0),  # Red for character frequency
-        'NORMALIZED_CHARACTER_FREQUENCY': (0, 255, 0),  # Green for word frequency
-        'COSINE_SIMILARITY_CHAR': (0, 0, 255),  # Blue for cosine similarity (character)
-        'COSINE_SIMILARITY_WORD': (255, 255, 0),  # Yellow for cosine similarity (word)
-        'STOPWORD_FREQUENCY': (255, 0, 255),  # Magenta for stopwords frequency
-        'NONLETTER_FREQUENCY': (0, 255, 255),  # Cyan for non-letter frequency
-    }
+    plt.figure(figsize=figsize)
 
-    # Determine the width of each section based on image size and number of aspects
-    num_aspects = len(fingerprint._fields)
-    section_width = image_size[0] // num_aspects
+    for i, fingerprint in enumerate(fingerprints):
+        plt.subplot(rows, cols, i + 1)
+        plt.imshow(fingerprint_to_pixel(fingerprint))
+        plt.axis('off')
 
-    # Map fingerprint data to pixel colors for each aspect
-    for i, aspect in enumerate(fingerprint._fields):
-        start_col = i * section_width
-        end_col = (i + 1) * section_width
+        # Word-wrap the title
+        if titles and i < len(titles):
+            wrapped_title = textwrap.fill(titles[i], title_length)
+            plt.title(wrapped_title)
 
-        color = aspect_colors.get(aspect, (0, 0, 0))  # Black for other aspects
-
-        # Fill the section of the image with the determined color
-        image[:, start_col:end_col] = color
-
-    return image
+    plt.tight_layout()
+    plt.show()
