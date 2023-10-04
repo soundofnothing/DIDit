@@ -2,6 +2,7 @@ from collections import Counter
 from typing import List, Dict, NamedTuple
 import re
 import math
+import numpy as np
 
 
 def normalize_text(text: str) -> str:
@@ -98,3 +99,42 @@ class Fingerprint(NamedTuple):
             NONLETTER_FREQUENCY=calculate_nonletter_frequencies(text)
         )
 
+
+def fingerprint_to_pixel(fingerprint: Fingerprint, image_size=(100, 100)) -> np.ndarray:
+    """
+    Convert a fingerprint (Fingerprint NamedTuple) to a pixel image.
+
+    Args:
+        fingerprint (Fingerprint): The fingerprint object containing data to encode.
+        image_size (tuple): The size of the output image in pixels (width, height).
+
+    Returns:
+        np.ndarray: A NumPy array representing the pixel image.
+    """
+    image = np.zeros((*image_size, 3), dtype=np.uint8)
+
+    # Define color mappings for different aspects of the fingerprint
+    aspect_colors = {
+        'CHARACTER_FREQUENCY': (255, 0, 0),  # Red for character frequency
+        'NORMALIZED_CHARACTER_FREQUENCY': (0, 255, 0),  # Green for word frequency
+        'COSINE_SIMILARITY_CHAR': (0, 0, 255),  # Blue for cosine similarity (character)
+        'COSINE_SIMILARITY_WORD': (255, 255, 0),  # Yellow for cosine similarity (word)
+        'STOPWORD_FREQUENCY': (255, 0, 255),  # Magenta for stopwords frequency
+        'NONLETTER_FREQUENCY': (0, 255, 255),  # Cyan for non-letter frequency
+    }
+
+    # Determine the width of each section based on image size and number of aspects
+    num_aspects = len(fingerprint._fields)
+    section_width = image_size[0] // num_aspects
+
+    # Map fingerprint data to pixel colors for each aspect
+    for i, aspect in enumerate(fingerprint._fields):
+        start_col = i * section_width
+        end_col = (i + 1) * section_width
+
+        color = aspect_colors.get(aspect, (0, 0, 0))  # Black for other aspects
+
+        # Fill the section of the image with the determined color
+        image[:, start_col:end_col] = color
+
+    return image
