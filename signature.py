@@ -191,6 +191,9 @@ class Fingerprint(NamedTuple):
             structural_deviation=structural_deviation
         )
 
+def __str__(self):
+    return str(self.identity_vector)
+
 # Define the display function with word-wrapped titles
 def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(10, 5), title_length=24):
     """
@@ -252,3 +255,4 @@ def render_heatmap(text_snippets: List[str]):
 
     # Show the heatmap
     plt.show()
+    print("/n".join(fingerprints))
