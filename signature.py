@@ -53,9 +53,15 @@ def calculate_stopword_frequencies(text: str) -> Dict[str, float]:
     # Split the text into words
     words = text.split()
     
-    # Define the stopwords and calculate the total number of stopwords
+    # Define the stopwords list
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
+    
+    # Calculate the total number of stopwords
     total_stopwords = sum(1 for word in words if word in stopwords)
+    
+    # Check if total_stopwords is zero to avoid division by zero
+    if total_stopwords == 0:
+        return {word: 0.0 for word in stopwords}
     
     # Calculate the stopwords counts and divide by the total number of stopwords
     stopwords_frequencies = {
@@ -64,6 +70,7 @@ def calculate_stopword_frequencies(text: str) -> Dict[str, float]:
     }
     
     return stopwords_frequencies
+
 
 def calculate_nonletter_frequencies(text: str) -> Dict[str, float]:
     # Split the text into words
@@ -101,14 +108,14 @@ def calculate_cosine_similarity(vector1: Dict[str, int], vector2: Dict[str, int]
 
 
 def calculate_cosine_similarity_char(text: str) -> float:
-    char_freq = calculate_character_frequencies(text)
+    char_freq = calculate_relative_character_frequencies(text)
     char_freq_normalized = calculate_normalized_character_frequencies(text)
     similarity = calculate_cosine_similarity(char_freq, char_freq_normalized)
     return similarity
 
 
 def calculate_cosine_similarity_word(text: str) -> float:
-    word_freq = calculate_word_frequencies(text)
+    word_freq = calculate_relative_word_frequencies(text)
     word_freq_normalized = calculate_normalized_word_frequencies(text)
     similarity = calculate_cosine_similarity(word_freq, word_freq_normalized)
     return similarity
