@@ -138,3 +138,15 @@ def fingerprint_to_pixel(fingerprint: Fingerprint, image_size=(100, 100)) -> np.
         image[:, start_col:end_col] = color
 
     return image
+
+if __name__ == "__name__":
+    import matplotlib.pyplot as plt
+    # Example usage:
+    text = "This is a sample text for fingerprinting. It contains text!"
+    fingerprint = Fingerprint.from_text(text)
+    pixel_image = fingerprint_to_pixel(fingerprint)
+
+    # Display the pixel image
+    plt.imshow(pixel_image)
+    plt.axis('off')
+    plt.show()
