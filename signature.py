@@ -3,17 +3,19 @@ from typing import List, Dict, NamedTuple
 import re
 import math
 import numpy as np
+from textblob import TextBlob, Word, WordList
 
 
-def normalize_text(text: str) -> str:
-    text = text.lower()
-    text = re.sub(r'[^a-z0-9\s]', '', text)
-    #todo remove punctuation
-    #todo perform stemming
-    return text
+def normalize_text(text: str) -> WordList:
+    text = TextBlob(text)
+    # remove whitespace, covert to lowercase, attempt to correct spelling
+    text = text.strip().lower().correct()
+    # convert every word in a sentence to singular form
+    return WordList(word.singularize() for word in text.words)
 
 
 def calculate_character_frequencies(text: str) -> Dict[str, int]:
+    # do NOT convert to a blob, the punctuation would be stripped and we need it for a baseline
     character_counts = Counter(text)
     return dict(character_counts)
 
@@ -23,6 +25,7 @@ def calculate_normalized_character_frequencies(text: str) -> Dict[str, int]:
 
 
 def calculate_word_frequencies(text: str) -> Dict[str, int]:
+    # do NOT convert to a blob, the underlying word frequencies would be changed and we need it for a baseline
     words = text.split()
     word_counts = Counter(words)
     return dict(word_counts)
@@ -33,12 +36,14 @@ def calculate_normalized_word_frequencies(text: str) -> Dict[str, int]:
 
 
 def calculate_stopword_frequencies(text: str) -> Dict[str, int]:
+    # do NOT convert to a blob, the underlying word frequencies would be changed and we need it for a baseline
     words = text.split()
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
     stopwords_counts = Counter(word for word in words if word in stopwords)
     return dict(stopwords_counts)
 
 def calculate_nonletter_frequencies(text: str) -> Dict[str, int]:
+    # do NOT convert to a blob, the punctuation would be removed and we need it for a baseline
     words = text.split()
     nonletter_counts = Counter(char for char in words if not char.isalpha())
     return dict(nonletter_counts)
