@@ -6,12 +6,12 @@ import numpy as np
 from textblob import TextBlob, Word, WordList
 
 
-def normalize_text(text: str) -> WordList:
+def normalize_text(text: str) -> str:
     text = TextBlob(text)
     # remove whitespace, covert to lowercase, attempt to correct spelling
     text = text.strip().lower().correct()
     # convert every word in a sentence to singular form
-    return WordList(word.singularize() for word in text.words)
+    return ' '.join(word.singularize() for word in text.words)
 
 
 def calculate_character_frequencies(text: str) -> Dict[str, int]:
@@ -143,15 +143,3 @@ def fingerprint_to_pixel(fingerprint: Fingerprint, image_size=(100, 100)) -> np.
         image[:, start_col:end_col] = color
 
     return image
-
-if __name__ == "__name__":
-    import matplotlib.pyplot as plt
-    # Example usage:
-    text = "This is a sample text for fingerprinting. It contains text!"
-    fingerprint = Fingerprint.from_text(text)
-    pixel_image = fingerprint_to_pixel(fingerprint)
-
-    # Display the pixel image
-    plt.imshow(pixel_image)
-    plt.axis('off')
-    plt.show()
