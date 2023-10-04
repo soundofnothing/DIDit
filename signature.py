@@ -1,9 +1,11 @@
 from collections import Counter
 from typing import List, Dict, NamedTuple
-import re
 import math
 import numpy as np
 from textblob import TextBlob, Word, WordList
+import matplotlib.pyplot as plt
+import textwrap
+import seaborn as sns
 
 
 def normalize_text(text: str) -> str:
@@ -14,7 +16,7 @@ def normalize_text(text: str) -> str:
     return ' '.join(word.singularize() for word in text.words)
 
 
-def calculate_character_frequencies(text: str) -> Dict[str, float]:
+def calculate_relative_character_frequencies(text: str) -> Dict[str, float]:
     # Calculate the total number of characters in the text
     total_characters = len(text)
     
@@ -29,7 +31,7 @@ def calculate_normalized_character_frequencies(text: str) -> Dict[str, int]:
     return calculate_character_frequencies(normalize_text(text))
 
 
-def calculate_word_frequencies(text: str) -> Dict[str, float]:
+def calculate_relative_word_frequencies(text: str) -> Dict[str, float]:
     # Split the text into words
     words = text.split()
     
@@ -105,26 +107,58 @@ class Fingerprint(NamedTuple):
     # measures the degree of character and word alignment with normed frequencies
     COSINE_SIMILARITY_CHAR: float
     COSINE_SIMILARITY_WORD: float
-
+    
     # structural_deviation := COSINE_SIMILARITY_CHAR * character_delta + COSINE_SIMILARITY_WORD * word_delta
     STOPWORD_FREQUENCY: Dict[str, int]
     NONLETTER_FREQUENCY: Dict[str, int]
 
-    # (character_delta, word_delta, and structural_deviation) is an "identity vector" for an author
+    # Calculate character_delta and word_delta as specified
+    character_delta: Dict[str, int] = {}
+    word_delta: Dict[str, int] = {}
     
+    # Calculate structural_deviation as specified
+    structural_deviation: float = 0.0
+
+    # (character_delta, word_delta, and structural_deviation) is an "identity vector" for an author
+    @property
+    def identity_vector(self):
+        return (self.character_delta, self.word_delta, self.structural_deviation)
+        
     @classmethod
     def from_text(cls, text: str):
-        return cls(
-            CHARACTER_FREQUENCY=calculate_character_frequencies(text),
-            NORMALIZED_CHARACTER_FREQUENCY=calculate_normalized_character_frequencies(text),
-            WORD_FREQUENCY=calculate_word_frequencies(text),
-            NORMALIZED_WORD_FREQUENCY=calculate_normalized_word_frequencies(text),
-            COSINE_SIMILARITY_CHAR=calculate_cosine_similarity_char(text),
-            COSINE_SIMILARITY_WORD=calculate_cosine_similarity_word(text),
-            STOPWORD_FREQUENCY=calculate_stopword_frequencies(text),
-            NONLETTER_FREQUENCY=calculate_nonletter_frequencies(text)
-        )
+        # Calculate the required frequencies and similarities
+        character_frequency = calculate_character_frequencies(text)
+        normalized_character_frequency = calculate_normalized_character_frequencies(text)
+        word_frequency = calculate_word_frequencies(text)
+        normalized_word_frequency = calculate_normalized_word_frequencies(text)
+        cosine_similarity_char = calculate_cosine_similarity_char(text)
+        cosine_similarity_word = calculate_cosine_similarity_word(text)
+        stopword_frequency = calculate_stopword_frequencies(text)
+        nonletter_frequency = calculate_nonletter_frequencies(text)
 
+        # Calculate character_delta and word_delta as specified
+        character_delta = {char: abs(character_frequency[char] - normalized_character_frequency[char])
+                          for char in character_frequency}
+        word_delta = {word: abs(word_frequency[word] - normalized_word_frequency[word])
+                     for word in word_frequency}
+
+        # Calculate structural_deviation as specified
+        structural_deviation = (cosine_similarity_char * sum(character_delta.values()) +
+                                cosine_similarity_word * sum(word_delta.values()))
+
+        return cls(
+            CHARACTER_FREQUENCY=character_frequency,
+            NORMALIZED_CHARACTER_FREQUENCY=normalized_character_frequency,
+            WORD_FREQUENCY=word_frequency,
+            NORMALIZED_WORD_FREQUENCY=normalized_word_frequency,
+            COSINE_SIMILARITY_CHAR=cosine_similarity_char,
+            COSINE_SIMILARITY_WORD=cosine_similarity_word,
+            STOPWORD_FREQUENCY=stopword_frequency,
+            NONLETTER_FREQUENCY=nonletter_frequency,
+            character_delta=character_delta,
+            word_delta=word_delta,
+            structural_deviation=structural_deviation
+        )
 
 # Define the display function with word-wrapped titles
 def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(10, 5), title_length=24):
@@ -139,8 +173,7 @@ def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(
         figsize (tuple): Figure size (width, height) in inches (default is (10, 5)).
         title_length (int): Maximum title length before word-wrapping (default is 24).
     """
-    import matplotlib.pyplot as plt
-    import textwrap
+    
     if cols is None:
         cols = len(fingerprints) // rows + (len(fingerprints) % rows > 0)
 
@@ -148,7 +181,7 @@ def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(
 
     for i, fingerprint in enumerate(fingerprints):
         plt.subplot(rows, cols, i + 1)
-        plt.imshow(fingerprint_to_pixel(fingerprint))
+        plt.imshow(display_fingerprints(fingerprint))
         plt.axis('off')
 
         # Word-wrap the title
@@ -166,8 +199,6 @@ def pad_char_frequencies(fp, char_labels):
 
 
 def render_heatmap(text_snippets: List[str]):
-    import matplotlib.pyplot as plt
-    import textwrap
     fingerprints = [Fingerprint.from_text(text) for text in text_snippets]
 
     # Get the character labels from the first fingerprint
