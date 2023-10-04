@@ -127,9 +127,9 @@ class Fingerprint(NamedTuple):
     @classmethod
     def from_text(cls, text: str):
         # Calculate the required frequencies and similarities
-        character_frequency = calculate_character_frequencies(text)
+        character_frequency = calculate_relative_character_frequencies(text)
         normalized_character_frequency = calculate_normalized_character_frequencies(text)
-        word_frequency = calculate_word_frequencies(text)
+        word_frequency = calculate_relative_word_frequencies(text)
         normalized_word_frequency = calculate_normalized_word_frequencies(text)
         cosine_similarity_char = calculate_cosine_similarity_char(text)
         cosine_similarity_word = calculate_cosine_similarity_word(text)
@@ -137,10 +137,15 @@ class Fingerprint(NamedTuple):
         nonletter_frequency = calculate_nonletter_frequencies(text)
 
         # Calculate character_delta and word_delta as specified
-        character_delta = {char: abs(character_frequency[char] - normalized_character_frequency[char])
-                          for char in character_frequency}
-        word_delta = {word: abs(word_frequency[word] - normalized_word_frequency[word])
-                     for word in word_frequency}
+        character_delta = {}
+        for char in character_frequency:
+            if char in normalized_character_frequency:
+                character_delta[char] = abs(character_frequency[char] - normalized_character_frequency[char])
+
+        word_delta = {}
+        for word in word_frequency:
+            if word in normalized_word_frequency:
+                word_delta[word] = abs(word_frequency[word] - normalized_word_frequency[word])
 
         # Calculate structural_deviation as specified
         structural_deviation = (cosine_similarity_char * sum(character_delta.values()) +
