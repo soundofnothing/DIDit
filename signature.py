@@ -255,4 +255,5 @@ def render_heatmap(text_snippets: List[str]):
 
     # Show the heatmap
     plt.show()
-    print("/n".join(fingerprints))
+    for fingerprint in fingerprints:
+        print(fingerprint)
