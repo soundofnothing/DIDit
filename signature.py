@@ -8,6 +8,9 @@ import textwrap
 import seaborn as sns
 
 
+STOPWORDS = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
+
+
 def normalize_text(text: str) -> str:
     text = TextBlob(text)
     # remove whitespace, covert to lowercase, attempt to correct spelling
@@ -15,8 +18,7 @@ def normalize_text(text: str) -> str:
     # convert every word in a sentence to singular form
     words = [word.singularize() for word in text.words]
     # remove stopwords
-    stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
-    filtered_words = [word for word in words if word not in stopwords]
+    filtered_words = [word for word in words if word not in STOPWORDS]
     # join the filtered words back into a single string
     return ' '.join(filtered_words)
 
@@ -62,7 +64,7 @@ def calculate_stopword_frequencies(text: str) -> Dict[str, float]:
     stopwords = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
     
     # Calculate the total number of stopwords
-    total_stopwords = sum(1 for word in words if word in stopwords)
+    total_stopwords = sum(1 for word in words if word in STOPWORDS)
     
     # Check if total_stopwords is zero to avoid division by zero
     if total_stopwords == 0:
@@ -260,5 +262,54 @@ def render_heatmap(text_snippets: List[str]):
 
     # Show the heatmap
     plt.show()
+def render_heatmap(text_snippets: List[str]):
+    fingerprints = [Fingerprint.from_text(text) for text in text_snippets]
+
+    # Get the character labels from the first fingerprint
+    char_labels = list(fingerprints[0].NORMALIZED_CHARACTER_FREQUENCY.keys())
+
+    # Pad character frequencies for all fingerprints
+    char_freq_matrix = np.array([pad_char_frequencies(fp, char_labels) for fp in fingerprints])
+
+    # Define the labels for the x-axis (characters) and y-axis (text snippets)
+    snippet_labels = [textwrap.wrap(text, 20) for text in text_snippets]
+
+    # Create the heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(char_freq_matrix, cmap="YlGnBu", xticklabels=char_labels, yticklabels=snippet_labels)
+
+    # Customize the heatmap appearance (e.g., add labels, title, etc.)
+    plt.xlabel("Character")
+    plt.ylabel("Text Snippet")
+    plt.title("Heatmap of Normalized Character Frequencies")
+
+    # Show the heatmap
+    plt.show()
     for fingerprint in fingerprints:
-        print(fingerprint)
+        visualize_fingerprint_identity(fingerprint)
+
+
+def visualize_fingerprint_identity(fingerprint):
+    # Extract character and word frequencies
+    character_frequency = fingerprint.CHARACTER_FREQUENCY
+    word_frequency = fingerprint.WORD_FREQUENCY
+    
+    # Create a scatterplot for character frequencies
+    plt.figure(figsize=(12, 5))
+    plt.subplot(121)
+    plt.scatter(range(len(character_frequency)), list(character_frequency.values()), c='b', label='Character Frequency')
+    plt.xticks(range(len(character_frequency)), list(character_frequency.keys()), rotation=90)
+    plt.xlabel('Character')
+    plt.ylabel('Frequency')
+    plt.title('Character Frequency')
+    
+    # Create a scatterplot for word frequencies
+    plt.subplot(122)
+    plt.scatter(range(len(word_frequency)), list(word_frequency.values()), c='g', label='Word Frequency')
+    plt.xticks(range(len(word_frequency)), list(word_frequency.keys()), rotation=90)
+    plt.xlabel('Word')
+    plt.ylabel('Frequency')
+    plt.title('Word Frequency')
+    
+    plt.tight_layout()
+    plt.show()
