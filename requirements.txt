@@ -1,7 +1,6 @@
 dash
 dash-core-components
 dash-html-components
-feedparser
 graphviz
 networkx
 numpy
@@ -9,3 +8,6 @@ plotly
 requests
 scikit-learn
 umap-learn
+docarray
+nltk
+textblob
