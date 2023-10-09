@@ -2,6 +2,11 @@ from collections import Counter
 from typing import List, Dict, NamedTuple
 import math
 from textblob import TextBlob, Word, WordList
+import nltk
+
+# Check if the 'punkt' corpus has been downloaded, and if not, download it.
+if not nltk.data.find('tokenizers/punkt'):
+    nltk.download('punkt')
 
 
 STOPWORDS = ['a', 'an', 'the', 'is', 'are', 'am', 'was', 'were']
