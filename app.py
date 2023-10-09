@@ -4,6 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 from visualize import render_heatmap, visualize_fingerprint_identity
 from signature import Fingerprint
+import requests
 
 # Import dash_table.DataTable
 import dash_table
@@ -14,6 +15,14 @@ app = dash.Dash(__name__)
 # Define the layout of the app
 app.layout = html.Div([
     html.H1("Text Analysis Dashboard"),
+    
+    # Input component for Dropbox URL
+    dcc.Input(
+        id='dropbox-url-input',
+        type='text',
+        placeholder="Enter Dropbox URL...",
+        style={'width': '100%'},
+    ),
     
     # Input component for entering text snippets
     dcc.Textarea(
@@ -54,6 +63,29 @@ app.layout = html.Div([
         page_size=10,
     ),
 ])
+
+# Define a function to fetch CSV data from Dropbox URL
+def fetch_csv_data(dropbox_url):
+    response = requests.get(dropbox_url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        return None
+
+# Define callback to prepopulate the textarea with CSV data
+@app.callback(
+    Output('text-input', 'value'),
+    Input('dropbox-url-input', 'value')
+)
+def prepopulate_textarea(dropbox_url):
+    if dropbox_url:
+        csv_data = fetch_csv_data(dropbox_url)
+        if csv_data:
+            return csv_data
+        else:
+            return "Failed to fetch CSV data from Dropbox."
+    else:
+        return ""
 
 # Define callback to update heatmap and DataTable
 @app.callback(
