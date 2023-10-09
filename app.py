@@ -120,4 +120,4 @@ def update_heatmap_and_table(n_clicks, text_input):
         return {}, []
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(jupyter_mode="external")
