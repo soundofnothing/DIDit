@@ -1,68 +1,119 @@
-import plotly.graph_objects as go
-import plotly.express as px
-from datetime import datetime
-from typing import Dict, List
+import numpy as np
+import matplotlib.pyplot as plt
+import textwrap
+import seaborn as sns
+
+# Define the display function with word-wrapped titles
+def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(10, 5), title_length=24):
+    """
+    Display multiple fingerprints in a grid of subplots with word-wrapped titles.
+
+    Args:
+        fingerprints (list): List of Fingerprint objects to display.
+        titles (list): List of titles for each fingerprint (optional).
+        rows (int): Number of rows in the grid (default is 1).
+        cols (int): Number of columns in the grid (default is None, determined automatically).
+        figsize (tuple): Figure size (width, height) in inches (default is (10, 5)).
+        title_length (int): Maximum title length before word-wrapping (default is 24).
+    """
+    
+    if cols is None:
+        cols = len(fingerprints) // rows + (len(fingerprints) % rows > 0)
+
+    plt.figure(figsize=figsize)
+
+    for i, fingerprint in enumerate(fingerprints):
+        plt.subplot(rows, cols, i + 1)
+        plt.imshow(display_fingerprints(fingerprint))
+        plt.axis('off')
+
+        # Word-wrap the title
+        if titles and i < len(titles):
+            wrapped_title = textwrap.fill(titles[i], title_length)
+            plt.title(wrapped_title)
+
+    plt.tight_layout()
+    plt.show()
 
 
-def visualize_character_frequencies(timeseries: Dict[datetime, Dict[str, int]]):
-    fig = go.Figure()
-
-    for timestamp, character_frequencies in timeseries.items():
-        characters = list(character_frequencies.keys())
-        frequencies = list(character_frequencies.values())
-
-        fig.add_trace(go.Bar(
-            x=characters,
-            y=frequencies,
-            name=f'Character Frequencies ({timestamp})'
-        ))
-
-    fig.update_layout(title='Character Frequencies over Time', xaxis_title='Character', yaxis_title='Frequency')
-    fig.show()
+# Define a function to pad character frequencies with zeros
+def pad_char_frequencies(fp, char_labels):
+    return [fp.NORMALIZED_CHARACTER_FREQUENCY.get(char, 0) for char in char_labels]
 
 
-def visualize_word_frequencies(timeseries: Dict[datetime, Dict[str, int]]):
-    fig = go.Figure()
+def render_heatmap(text_snippets: List[str]):
+    fingerprints = [Fingerprint.from_text(text) for text in text_snippets]
 
-    for timestamp, word_frequencies in timeseries.items():
-        words = list(word_frequencies.keys())
-        frequencies = list(word_frequencies.values())
+    # Get the character labels from the first fingerprint
+    char_labels = list(fingerprints[0].NORMALIZED_CHARACTER_FREQUENCY.keys())
 
-        fig.add_trace(go.Bar(
-            x=words,
-            y=frequencies,
-            name=f'Word Frequencies ({timestamp})'
-        ))
+    # Pad character frequencies for all fingerprints
+    char_freq_matrix = np.array([pad_char_frequencies(fp, char_labels) for fp in fingerprints])
 
-    fig.update_layout(title='Word Frequencies over Time', xaxis_title='Word', yaxis_title='Frequency')
-    fig.show()
+    # Define the labels for the x-axis (characters) and y-axis (text snippets)
+    snippet_labels = [textwrap.wrap(text, 20) for text in text_snippets]
+
+    # Create the heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(char_freq_matrix, cmap="YlGnBu", xticklabels=char_labels, yticklabels=snippet_labels)
+
+    # Customize the heatmap appearance (e.g., add labels, title, etc.)
+    plt.xlabel("Character")
+    plt.ylabel("Text Snippet")
+    plt.title("Heatmap of Normalized Character Frequencies")
+
+    # Show the heatmap
+    plt.show()
 
 
-def visualize_stopword_and_nonletter_frequencies(timeseries: Dict[datetime, Dict[str, int]]):
-    fig = go.Figure()
+def render_heatmap(text_snippets: List[str]):
+    fingerprints = [Fingerprint.from_text(text) for text in text_snippets]
 
-    for timestamp, (stopword_frequencies, nonletter_frequencies) in timeseries.items():
-        stopwords = list(stopword_frequencies.keys())
-        stopwords_frequencies = list(stopword_frequencies.values())
-        nonletter = list(nonletter_frequencies.keys())
-        nonletter_frequencies = list(nonletter_frequencies.values())
+    # Get the character labels from the first fingerprint
+    char_labels = list(fingerprints[0].NORMALIZED_CHARACTER_FREQUENCY.keys())
 
-        fig.add_trace(go.Bar(
-            name=f'Stopwords ({timestamp})',
-            x=stopwords,
-            y=stopwords_frequencies
-        ))
+    # Pad character frequencies for all fingerprints
+    char_freq_matrix = np.array([pad_char_frequencies(fp, char_labels) for fp in fingerprints])
 
-        fig.add_trace(go.Bar(
-            name=f'Non-letter Characters ({timestamp})',
-            x=nonletter,
-            y=nonletter_frequencies
-        ))
+    # Define the labels for the x-axis (characters) and y-axis (text snippets)
+    snippet_labels = [textwrap.wrap(text, 20) for text in text_snippets]
 
-    fig.update_layout(
-        title='Stopword and Non-letter Character Frequencies over Time',
-        xaxis_title='Words/Characters',
-        yaxis_title='Frequency',
-        barmode='stack'
-    )
-    fig.show()
+    # Create the heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(char_freq_matrix, cmap="YlGnBu", xticklabels=char_labels, yticklabels=snippet_labels)
+
+    # Customize the heatmap appearance (e.g., add labels, title, etc.)
+    plt.xlabel("Character")
+    plt.ylabel("Text Snippet")
+    plt.title("Heatmap of Normalized Character Frequencies")
+
+    # Show the heatmap
+    plt.show()
+    for fingerprint in fingerprints:
+        visualize_fingerprint_identity(fingerprint)
+
+
+def visualize_fingerprint_identity(fingerprint):
+    # Extract character and word frequencies
+    character_frequency = fingerprint.CHARACTER_FREQUENCY
+    word_frequency = fingerprint.WORD_FREQUENCY
+    
+    # Create a scatterplot for character frequencies
+    plt.figure(figsize=(12, 5))
+    plt.subplot(121)
+    plt.scatter(range(len(character_frequency)), list(character_frequency.values()), c='b', label='Character Frequency')
+    plt.xticks(range(len(character_frequency)), list(character_frequency.keys()), rotation=90)
+    plt.xlabel('Character')
+    plt.ylabel('Frequency')
+    plt.title('Character Frequency')
+    
+    # Create a scatterplot for word frequencies
+    plt.subplot(122)
+    plt.scatter(range(len(word_frequency)), list(word_frequency.values()), c='g', label='Word Frequency')
+    plt.xticks(range(len(word_frequency)), list(word_frequency.keys()), rotation=90)
+    plt.xlabel('Word')
+    plt.ylabel('Frequency')
+    plt.title('Word Frequency')
+    
+    plt.tight_layout()
+    plt.show()
