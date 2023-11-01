@@ -8,6 +8,7 @@ matplotlib
 plotly
 requests
 scikit-learn
+seaborn
 umap-learn
 docarray
 nltk
