@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import textwrap
 import seaborn as sns
+from typing import List
+
 
 # Define the display function with word-wrapped titles
 def display_fingerprints(fingerprints, titles=None, rows=1, cols=None, figsize=(10, 5), title_length=24):
