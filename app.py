@@ -91,20 +91,18 @@ def compare_fingerprints(texts):
         st.plotly_chart(fig)
         st.write(df)
     
-# Streamlit app
 st.title("Authorship Inference")
 
-# Allow users to input multiple text snippets
-texts = [st.text_area(f'Text Snippet {i}', '') for i in range(1, 4)]  # Adjust range for desired number of text areas
+# Let the user specify the number of text snippets they want to compare
+num_texts = st.number_input("Number of Text Snippets", min_value=1, value=1)
 
-# Create a multiselect dropdown menu for selecting text snippets to compare
-selected_texts = st.multiselect(
-    "Select Texts to Compare",
-    options=[f"Text {i+1}" for i in range(len(texts))],
-    format_func=lambda x: texts[int(x.split(' ')[1]) - 1]
-)
+# Dynamically create that number of text boxes
+text_boxes = [st.text_area(f"Enter Text Snippet {i+1}") for i in range(num_texts)]
 
 if st.button('Analyze'):
-    # Filter the texts based on user selection
-    texts_to_compare = [texts[int(x.split(' ')[1]) - 1] for x in selected_texts]
-    compare_fingerprints(texts_to_compare)
+    # Now text_boxes is a list of strings containing the text from each text box
+    texts_to_compare = [box for box in text_boxes if box]  # This filters out any empty text boxes
+    if texts_to_compare:
+        compare_fingerprints(texts_to_compare)
+    else:
+        st.error("Please enter at least one text snippet.")
