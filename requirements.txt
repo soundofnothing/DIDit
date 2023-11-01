@@ -12,3 +12,4 @@ umap-learn
 docarray
 nltk
 textblob
+beautifulsoup4

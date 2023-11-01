@@ -3,6 +3,20 @@ import plotly.graph_objects as go
 import pandas as pd
 from signature import Fingerprint
 import streamlit as st
+import requests
+from bs4 import BeautifulSoup
+
+
+def get_text_from_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Ensure the request was successful
+        soup = BeautifulSoup(response.text, 'html.parser')
+        return soup.get_text()
+    except requests.RequestException as e:
+        st.error(f"Failed to retrieve the URL: {e}")
+        return None
+    
 
 def create_fingerprint(text):
     return Fingerprint.from_text(text)
@@ -81,15 +95,16 @@ def compare_fingerprints(texts):
     figures = []
     data_tables = []
     for text in texts:
+        # Check if the text is actually a URL
+        if text.startswith(("http://", "https://", "www.")):
+            text = get_text_from_url(text)
+            if text is None:
+                continue  # Skip to the next text if URL retrieval failed
+        
         fingerprint = Fingerprint.from_text(text)
         fig, df = visualize_fingerprint_identity(fingerprint)
         figures.append(fig)
         data_tables.append(df)
-    
-    for i, (fig, df) in enumerate(zip(figures, data_tables)):
-        st.write(f'### Text Snippet {i + 1}')
-        st.plotly_chart(fig)
-        st.write(df)
     
 st.title("Authorship Inference")
 
