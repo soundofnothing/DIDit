@@ -1,7 +1,9 @@
+import streamlit as st
 import plotly.subplots as sp
 import plotly.graph_objects as go
 import pandas as pd
 from signature import Fingerprint
+
 
 def visualize_fingerprint_identity(fingerprint):
     # Extract the required data
@@ -70,7 +72,19 @@ def visualize_fingerprint_identity(fingerprint):
 
     return fig
 
-# Example usage:
-fingerprint = Fingerprint.from_text("Your text here")
-fig = visualize_fingerprint_identity(fingerprint)
-fig.show()
+# Streamlit UI
+st.title("Fingerprint Analysis")
+
+# Text area for user input
+user_input = st.text_area("Enter text here:")
+
+# Analyze button
+if st.button("Analyze"):
+    # Create fingerprint from user input
+    fingerprint = Fingerprint.from_text(user_input)
+    
+    # Generate visualization
+    fig = visualize_fingerprint_identity(fingerprint)
+    
+    # Display visualization in Streamlit
+    st.plotly_chart(fig)
