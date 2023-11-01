@@ -4,6 +4,7 @@ dash-html-components
 graphviz
 networkx
 numpy
+matplotlib
 plotly
 requests
 scikit-learn
