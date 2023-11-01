@@ -1,5 +1,5 @@
 streamlit
-ipywidgets
+#ipywidgets
 graphviz
 networkx
 numpy

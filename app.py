@@ -1,41 +1,14 @@
-import streamlit as st
 import plotly.subplots as sp
 import plotly.graph_objects as go
 import pandas as pd
 from signature import Fingerprint
+import streamlit as st
+
 
 def visualize_fingerprint_identity(fingerprint):
     # Extract the required data
     character_frequency = fingerprint.CHARACTER_FREQUENCY
     word_frequency = fingerprint.WORD_FREQUENCY
-
-    # Prepare data for the table
-    fingerprint_data = {
-        "Character Frequency": fingerprint.CHARACTER_FREQUENCY,
-        "Normalized Character Frequency": fingerprint.NORMALIZED_CHARACTER_FREQUENCY,
-        "Word Frequency": fingerprint.WORD_FREQUENCY,
-        "Normalized Word Frequency": fingerprint.NORMALIZED_WORD_FREQUENCY,
-        "Cosine Similarity (Char)": fingerprint.COSINE_SIMILARITY_CHAR,
-        "Cosine Similarity (Word)": fingerprint.COSINE_SIMILARITY_WORD,
-        "Stopword Frequency": fingerprint.STOPWORD_FREQUENCY,
-        "Nonletter Frequency": fingerprint.NONLETTER_FREQUENCY,
-        "Character Delta": fingerprint.character_delta,
-        "Word Delta": fingerprint.word_delta,
-        "Structural Deviation": fingerprint.structural_deviation
-    }
-
-    df = pd.DataFrame(fingerprint_data)
-
-    # Streamlit widgets for sorting and filtering
-    st.sidebar.header("Sort and Filter")
-    sort_column = st.sidebar.selectbox("Sort by column:", df.columns)
-    sort_order = st.sidebar.radio("Order:", ["Ascending", "Descending"])
-    filter_value = st.sidebar.slider("Filter rows with value greater than:", 0, int(df[sort_column].max()), value=0)
-
-
-    # Apply sorting and filtering
-    df = df.sort_values(by=sort_column, ascending=(sort_order == "Ascending"))
-    df = df[df[sort_column] > filter_value]
 
     # Create scatter plots for character and word frequencies
     char_scatter = go.Scatter(
@@ -52,8 +25,26 @@ def visualize_fingerprint_identity(fingerprint):
         name='Word Frequency'
     )
 
+    # Prepare data for the table
+    fingerprint_data = {
+        "Character Frequency": fingerprint.CHARACTER_FREQUENCY,
+        "Normalized Character Frequency": fingerprint.NORMALIZED_CHARACTER_FREQUENCY,
+        "Word Frequency": fingerprint.WORD_FREQUENCY,
+        "Normalized Word Frequency": fingerprint.NORMALIZED_WORD_FREQUENCY,
+        "Cosine Similarity (Char)": fingerprint.COSINE_SIMILARITY_CHAR,
+        "Cosine Similarity (Word)": fingerprint.COSINE_SIMILARITY_WORD,
+        "Stopword Frequency": fingerprint.STOPWORD_FREQUENCY,
+        "Nonletter Frequency": fingerprint.NONLETTER_FREQUENCY,
+        "Character Delta": fingerprint.character_delta,
+        "Word Delta": fingerprint.word_delta,
+        "Structural Deviation": fingerprint.structural_deviation
+    }
+
+    # Convert data to DataFrame for display
+    df = pd.DataFrame(fingerprint_data)
+
     # Create a table for the fingerprint data
-    table = go.FigureWidget(
+    table = go.Figure(
         data=[go.Table(
             header=dict(values=list(df.columns)),
             cells=dict(values=[df[col] for col in df.columns]))
@@ -82,6 +73,7 @@ def visualize_fingerprint_identity(fingerprint):
     )
 
     return fig
+
 
 
 # Streamlit UI
