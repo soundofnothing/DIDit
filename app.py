@@ -4,6 +4,9 @@ import pandas as pd
 from signature import Fingerprint
 import streamlit as st
 
+def create_fingerprint(text):
+    return Fingerprint.from_text(text)
+
 
 def visualize_fingerprint_identity(fingerprint):
     # Extract the required data
@@ -72,23 +75,36 @@ def visualize_fingerprint_identity(fingerprint):
         width=1200
     )
 
-    return fig
+    return fig, df
 
-
-
-# Streamlit UI
-st.title("Fingerprint Analysis")
-
-# Text area for user input
-user_input = st.text_area("Enter text here:")
-
-# Analyze button
-if st.button("Analyze"):
-    # Create fingerprint from user input
-    fingerprint = Fingerprint.from_text(user_input)
+def compare_fingerprints(texts):
+    figures = []
+    data_tables = []
+    for text in texts:
+        fingerprint = Fingerprint.from_text(text)
+        fig, df = visualize_fingerprint_identity(fingerprint)
+        figures.append(fig)
+        data_tables.append(df)
     
-    # Generate visualization
-    fig = visualize_fingerprint_identity(fingerprint)
+    for i, (fig, df) in enumerate(zip(figures, data_tables)):
+        st.write(f'### Text Snippet {i + 1}')
+        st.plotly_chart(fig)
+        st.write(df)
     
-    # Display visualization in Streamlit
-    st.plotly_chart(fig)
+# Streamlit app
+st.title("Authorship Inference")
+
+# Allow users to input multiple text snippets
+texts = [st.text_area(f'Text Snippet {i}', '') for i in range(1, 4)]  # Adjust range for desired number of text areas
+
+# Create a multiselect dropdown menu for selecting text snippets to compare
+selected_texts = st.multiselect(
+    "Select Texts to Compare",
+    options=[f"Text {i+1}" for i in range(len(texts))],
+    format_func=lambda x: texts[int(x.split(' ')[1]) - 1]
+)
+
+if st.button('Analyze'):
+    # Filter the texts based on user selection
+    texts_to_compare = [texts[int(x.split(' ')[1]) - 1] for x in selected_texts]
+    compare_fingerprints(texts_to_compare)
