@@ -119,18 +119,10 @@ def visualize_fingerprint_identity(fingerprint):
     # Convert data to DataFrame for display
     df = pd.DataFrame(fingerprint_data)
 
-    # Create a table for the fingerprint data
-    table = go.FigureWidget(
-        data=[go.Table(
-            header=dict(values=list(df.columns)),
-            cells=dict(values=[df[col] for col in df.columns]))
-        ]
-    )
-
     # Create subplots
     fig = sp.make_subplots(
         rows=2, cols=2,
-        subplot_titles=('Character Frequency', 'Word Frequency'),
+        subplot_titles=('Character Frequency', 'Word Frequency', 'Fingerprint Data'),
         specs=[[{'type': 'scatter'}, {'type': 'scatter'}],
                [{'type': 'table', 'colspan': 2}, None]],
         vertical_spacing=0.1
@@ -139,7 +131,13 @@ def visualize_fingerprint_identity(fingerprint):
     # Add traces to subplots
     fig.add_trace(char_scatter, row=1, col=1)
     fig.add_trace(word_scatter, row=1, col=2)
-    fig.add_trace(table.data[0], row=2, col=1)
+    fig.add_trace(
+        go.Table(
+            header=dict(values=list(df.columns)),
+            cells=dict(values=[df[col] for col in df.columns])
+        ),
+        row=2, col=1
+    )
 
     # Update layout
     fig.update_layout(
