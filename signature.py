@@ -35,7 +35,7 @@ def calculate_relative_character_frequencies(text: str) -> Dict[str, float]:
 
 
 def calculate_normalized_character_frequencies(text: str) -> Dict[str, int]:
-    return calculate_character_frequencies(normalize_text(text))
+    return calculate_relative_character_frequencies(normalize_text(text))
 
 
 def calculate_relative_word_frequencies(text: str) -> Dict[str, float]:
@@ -53,7 +53,7 @@ def calculate_relative_word_frequencies(text: str) -> Dict[str, float]:
 
 
 def calculate_normalized_word_frequencies(text: str) -> Dict[str, int]:
-    return calculate_word_frequencies(normalize_text(text))
+    return calculate_relative_word_frequencies(normalize_text(text))
 
 
 def calculate_stopword_frequencies(text: str) -> Dict[str, float]:
