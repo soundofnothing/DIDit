@@ -4,26 +4,10 @@ import plotly.graph_objects as go
 import pandas as pd
 from signature import Fingerprint
 
-
 def visualize_fingerprint_identity(fingerprint):
     # Extract the required data
     character_frequency = fingerprint.CHARACTER_FREQUENCY
     word_frequency = fingerprint.WORD_FREQUENCY
-
-    # Create scatter plots for character and word frequencies
-    char_scatter = go.Scatter(
-        x=list(character_frequency.keys()),
-        y=list(character_frequency.values()),
-        mode='markers',
-        name='Character Frequency'
-    )
-
-    word_scatter = go.Scatter(
-        x=list(word_frequency.keys()),
-        y=list(word_frequency.values()),
-        mode='markers',
-        name='Word Frequency'
-    )
 
     # Prepare data for the table
     fingerprint_data = {
@@ -40,13 +24,46 @@ def visualize_fingerprint_identity(fingerprint):
         "Structural Deviation": fingerprint.structural_deviation
     }
 
-    # Convert data to DataFrame for display
     df = pd.DataFrame(fingerprint_data)
+
+    # Streamlit widgets for sorting and filtering
+    st.sidebar.header("Sort and Filter")
+    sort_column = st.sidebar.selectbox("Sort by column:", df.columns)
+    sort_order = st.sidebar.radio("Order:", ["Ascending", "Descending"])
+    filter_value = st.sidebar.slider("Filter rows with value greater than:", 0, int(df[sort_column].max()), value=0)
+
+
+    # Apply sorting and filtering
+    df = df.sort_values(by=sort_column, ascending=(sort_order == "Ascending"))
+    df = df[df[sort_column] > filter_value]
+
+    # Create scatter plots for character and word frequencies
+    char_scatter = go.Scatter(
+        x=list(character_frequency.keys()),
+        y=list(character_frequency.values()),
+        mode='markers',
+        name='Character Frequency'
+    )
+
+    word_scatter = go.Scatter(
+        x=list(word_frequency.keys()),
+        y=list(word_frequency.values()),
+        mode='markers',
+        name='Word Frequency'
+    )
+
+    # Create a table for the fingerprint data
+    table = go.FigureWidget(
+        data=[go.Table(
+            header=dict(values=list(df.columns)),
+            cells=dict(values=[df[col] for col in df.columns]))
+        ]
+    )
 
     # Create subplots
     fig = sp.make_subplots(
         rows=2, cols=2,
-        subplot_titles=('Character Frequency', 'Word Frequency', 'Fingerprint Data'),
+        subplot_titles=('Character Frequency', 'Word Frequency'),
         specs=[[{'type': 'scatter'}, {'type': 'scatter'}],
                [{'type': 'table', 'colspan': 2}, None]],
         vertical_spacing=0.1
@@ -55,13 +72,7 @@ def visualize_fingerprint_identity(fingerprint):
     # Add traces to subplots
     fig.add_trace(char_scatter, row=1, col=1)
     fig.add_trace(word_scatter, row=1, col=2)
-    fig.add_trace(
-        go.Table(
-            header=dict(values=list(df.columns)),
-            cells=dict(values=[df[col] for col in df.columns])
-        ),
-        row=2, col=1
-    )
+    fig.add_trace(table.data[0], row=2, col=1)
 
     # Update layout
     fig.update_layout(
@@ -71,6 +82,7 @@ def visualize_fingerprint_identity(fingerprint):
     )
 
     return fig
+
 
 # Streamlit UI
 st.title("Fingerprint Analysis")
